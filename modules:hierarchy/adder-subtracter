@@ -1,0 +1,36 @@
+module top_module(
+    input [31:0] a,
+    input [31:0] b,
+    input sub,
+    output [31:0] sum
+);
+
+    wire [31:0] b_xor; 
+    wire [15:0] sum_low, sum_high;
+    wire carry_low, carry_high;
+
+    // Invert b if sub = 1
+    assign b_xor = b ^ {32{sub}};
+
+    // Lower 16 bits adder
+    add16 u0 (
+        .a    (a[15:0]),
+        .b    (b_xor[15:0]),
+        .cin  (sub),         // sub acts as carry-in
+        .sum  (sum_low),
+        .cout (carry_low)
+    );
+
+    // Upper 16 bits adder
+    add16 u1 (
+        .a    (a[31:16]),
+        .b    (b_xor[31:16]),
+        .cin  (carry_low),
+        .sum  (sum_high),
+        .cout (carry_high)
+    );
+
+    // Combine results
+    assign sum = {sum_high, sum_low};
+
+endmodule
